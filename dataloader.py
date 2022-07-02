@@ -16,7 +16,7 @@ from torchvision import transforms
 import random
 
 def get_ucf101(opt):
-    folder = "/home/alec/Documents/SmallDatasets/UCF-101/"
+    folder = opt.ucffolder
     fnames, labels = [], []
     for label in sorted(os.listdir(str(folder))):
         for fname in os.listdir(os.path.join(str(folder), label)):
@@ -28,7 +28,7 @@ def get_ucf101(opt):
 
 
 def get_hmdb(opt):
-    folder = "/home/alec/Documents/SmallDatasets/HMDB51/"
+    folder = opt.hmdbfolder
     fnames, labels = [], []
     for label in sorted(os.listdir(str(folder))):
         dir = os.path.join(str(folder), label)
@@ -44,7 +44,7 @@ def get_hmdb(opt):
     return fnames, labels, classes
 
 def get_kinetics(opt):
-    sourcepath = "/home/alec/Documents/NewZSL/kineticssmall.txt"
+    sourcepath = opt.kineticssource
     n_classes = '700'# if '700' in dataset else '400'
     with open(sourcepath, 'r') as f:
         data = [r[:-1].split(',') for r in f.readlines()]
