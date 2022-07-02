@@ -35,7 +35,7 @@ All setup is done inside of [config.py](config.py)
 
 In particular, be sure to set the correct folder for your copies of UCF101 and HDMB. Kinetics requires a metadata file with the list of videos and classes. An example can be found at [kineticssmall.txt](kineticssmall.txt)
 
-If you would like to use Weights&Biases, be sure to set *opt.wandb* to true, and set your username inside of [main.py](main.py)
+If you would like to use Weights&Biases, be sure to set *opt.wandb* to true, and set your username inside of [main.py](main.py). If you are on a cluster, and would not like spam from tqdm, you can set *opt.cluster* to false. 
 
 Here are setups to replicate results from relevent papers
 
