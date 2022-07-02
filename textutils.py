@@ -128,7 +128,7 @@ def clean_kinetics(class_name_inputs, opt, w2v=False):
         'making paper aeroplanes': 'make paper airplane',
         'mixing colours': 'mixing colors',
         'photobombing': 'taking pictures',
-        'playing rubiks cube': 'playing with rubiks cube',
+        'playing rubiks cube': 'playing with puzzle cube',
         'throwing ball (not baseball or American football)': 'throwing ball',
         'curling (sport)': 'curling sport',
         "massaging person's head": 'massaging head',
