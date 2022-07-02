@@ -22,7 +22,6 @@ config = {
     'learning_rate' : opt.lr,
     'epochs' : opt.n_epochs,
     'batch_size' : opt.batch_size,
-    'architecture' : opt.archname
 }
 
 if opt.wandb:
