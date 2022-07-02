@@ -25,11 +25,12 @@ config = {
     'architecture' : opt.archname
 }
 
-wandb.init(project='zsar', 
-        entity='ahkerrigan',
-        config=config)
-wandb.run.name = opt.description
-wandb.save()
+if opt.wandb:
+    wandb.init(project='zsar', 
+            entity='ahkerrigan',
+            config=config)
+    wandb.run.name = opt.description
+    wandb.save()
 
 
 # Get the datasets

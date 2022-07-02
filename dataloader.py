@@ -15,7 +15,7 @@ from torchvision import transforms
 
 import random
 
-def get_ucf101():
+def get_ucf101(opt):
     folder = "/home/alec/Documents/SmallDatasets/UCF-101/"
     fnames, labels = [], []
     for label in sorted(os.listdir(str(folder))):
@@ -27,7 +27,7 @@ def get_ucf101():
     return fnames, labels, classes
 
 
-def get_hmdb():
+def get_hmdb(opt):
     folder = "/home/alec/Documents/SmallDatasets/HMDB51/"
     fnames, labels = [], []
     for label in sorted(os.listdir(str(folder))):
@@ -43,7 +43,7 @@ def get_hmdb():
     classes = np.unique(labels)
     return fnames, labels, classes
 
-def get_kinetics(dataset=''):
+def get_kinetics(opt):
     sourcepath = "/home/alec/Documents/NewZSL/kineticssmall.txt"
     n_classes = '700'# if '700' in dataset else '400'
     with open(sourcepath, 'r') as f:
@@ -78,12 +78,12 @@ def get_kinetics_ucf_hmbd(opt):
 
 
     # TESTING ON UCF101
-    test_fnames, test_labels, test_classes = get_ucf101()
+    test_fnames, test_labels, test_classes = get_ucf101(opt)
     test_class_embedding = classes2embedding('ucf101', test_classes, opt)
     print('UCF101: total number of videos {}, classes {}'.format(len(test_fnames), len(test_classes)))
 
     # TESTING ON HMDB51
-    test_fnames2, test_labels2, test_classes2 = get_hmdb()
+    test_fnames2, test_labels2, test_classes2 = get_hmdb(opt)
     test_class_embedding2 = classes2embedding('hmdb51', test_classes2, opt)
     print('HMDB51: total number of videos {}, classes {}'.format(len(test_fnames2), len(test_classes2)))
 
@@ -92,7 +92,7 @@ def get_kinetics_ucf_hmbd(opt):
     if not opt.evaluate:
 
         # TRAINING ON KINETICS
-        train_fnames, train_labels, train_classes = get_kinetics()
+        train_fnames, train_labels, train_classes = get_kinetics(opt)
         train_fnames, train_labels, train_classes = filter_samples(opt, train_fnames, train_labels, train_classes)
         train_class_embedding = classes2embedding('kinetics', train_classes, opt)
         print('KINETICS: total number of videos {}, classes {}'.format(len(train_fnames), len(train_classes)))

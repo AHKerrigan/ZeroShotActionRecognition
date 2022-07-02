@@ -58,17 +58,17 @@ def train_one_epoch_pws(train_dataloader, val_dataloader1,  model, criterion, op
 
         optimizer.step()
 
-        '''
+        
         if i % loss_cycle == 0:
             wandb.log({opt.dataset + " " + opt.traintype + " Classification Loss" : loss.item()})
         if i % val_cycle == 0:
             if val_dataloader1:
                 acc1_1, acc1_5 = evaluate.evaluate_pws(val_dataloader1, model, opt)
-                wandb.log({opt.valset1 + " " + opt.traintype + " Top-1 Accuracy" : acc1_1})
-                wandb.log({opt.valset1 + " " + opt.traintype + " Top-5 Accuracy" : acc1_5})
+                if opt.wandb: wandb.log({opt.valset1 + " " + opt.traintype + " Top-1 Accuracy" : acc1_1})
+                if opt.wandb: wandb.log({opt.valset1 + " " + opt.traintype + " Top-5 Accuracy" : acc1_5})
             if val_dataloader2:
                 acc2_1, acc2_5 = evaluate.evaluate_pws(val_dataloader2, model, opt)
-                wandb.log({opt.valset2 + " " + opt.traintype + " Top-1 Accuracy" : acc2_1})
-                wandb.log({opt.valset2 + " " + opt.traintype + " Top-5 Accuracy" : acc2_5})
-        '''
+                if opt.wandb: wandb.log({opt.valset2 + " " + opt.traintype + " Top-1 Accuracy" : acc2_1})
+                if opt.wandb: wandb.log({opt.valset2 + " " + opt.traintype + " Top-5 Accuracy" : acc2_5})
+        
 
