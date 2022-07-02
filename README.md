@@ -6,7 +6,7 @@ Kevin Duarte,
 Yogesh Rawat,
 Mubarak Shah
 
-This paper has been submitted for publication in NeurIPS 2021
+This paper is published in NeurIPS 2021
 
 A reformulation of zero-shot action recognition away from nearest neighbor search, using a learned pairwise scoring function. We set the state of the art for single label classification on UCF101 and HMDB, as well as set a baseline for multi-label.
 
