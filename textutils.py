@@ -204,7 +204,6 @@ def w2vavg_embed(class_name_inputs, opt):
         full = vecs[name]
         avg = full.mean(0)
         outputs.append(avg)
-    print("before normalization we have", np.stack(outputs).shape)
     outputs = normalize(np.stack(outputs))
     #outputs = np.stack(outputs)
 

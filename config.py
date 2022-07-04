@@ -8,6 +8,8 @@ def getopt():
 
     opt = parser.parse_args()
     opt.kernels = multiprocessing.cpu_count()
+
+    opt.incremental = True
     opt.gpus = 1
     opt.wandb = True
 
@@ -20,6 +22,8 @@ def getopt():
     opt.text_embed = 'w2vavg'
     opt.train_samples = -1
     opt.network = 'multiplication'
+    opt.fixconvs = False
+    opt.pretrainbackbone = False
 
     opt.size = 112
     opt.clip_len = 16
@@ -30,9 +34,9 @@ def getopt():
     opt.class_overlap = 0.05
     opt.class_total = 350
 
-    opt.n_epochs = 20
+    opt.n_epochs = 2
 
-    opt.eval_per_epoch = 2
+    opt.eval_per_epoch = 1
     opt.loss_per_epoch = 40
 
     #opt.description = 'GeoGuess4-4.2M-Im2GPS3k-F*'
@@ -42,7 +46,7 @@ def getopt():
     opt.cluster = False
 
     opt.lr = 1e-3
-    opt.step_size = 20
+    opt.step_size = 5
 
     opt.batch_size = 32
     opt.dataset = 'kinetics'
@@ -52,6 +56,7 @@ def getopt():
     opt.traintype = 'ce'
 
     opt.device = torch.device('cuda')
+    opt.processes = 12
 
 
 

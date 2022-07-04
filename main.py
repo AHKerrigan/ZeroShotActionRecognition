@@ -34,22 +34,20 @@ if opt.wandb:
 
 # Get the datasets
 if opt.dataset == 'kinetics':
-    dataloaders = dataloader.get_kinetics_ucf_hmbd(opt)
-
-    kinetics_dataset = dataloaders['training'][0]
-    train_dataloader = torch.utils.data.DataLoader(kinetics_dataset, batch_size=opt.batch_size, num_workers=0, shuffle=True, drop_last=False)
+    datasets = dataloader.get_kinetics_ucf_hmbd(opt)
     
-    ucf_dataset = dataloaders['testing'][0]
-    val_dataloader1 = torch.utils.data.DataLoader(ucf_dataset, batch_size=opt.batch_size, num_workers=0, shuffle=True, drop_last=False)
-    
-    hmdb_dataset = dataloaders['testing'][1]
-    val_dataloader2 = torch.utils.data.DataLoader(hmdb_dataset, batch_size=opt.batch_size, num_workers=0, shuffle=True, drop_last=False)
+# Doing the incremental task or not 
+if opt.incremental:
+    loop = train.incremental_loop
+else:
+    loop = train.regular_loop
 
-# Cross entropy based training 
+# Cross entropy or nearest neighbor based training 
 if opt.traintype == 'ce':   
     criterion = torch.nn.CrossEntropyLoss()
     train_one_epoch = train.train_one_epoch_pws
 
+_ = criterion.to(opt.device)
 model = networks.get_network(opt)
 
 optimizer = torch.optim.Adam(model.parameters(), lr=opt.lr)
@@ -62,18 +60,4 @@ _ = model.to(opt.device)
 wandb.watch(model, criterion, log="all")
 
 acc10 = 0
-for epoch in range(opt.n_epochs): 
-
-    if not opt.evaluate:
-        _ = model.train()
-        train_one_epoch(train_dataloader, val_dataloader1, model, criterion, optimizer, scheduler, opt, epoch, val_dataloader2)
-
-
-    scheduler.step()
-    
-    
-    #acc10 = max(acc10, validate_one_epoch(val_dataloader, model, opt, epoch, writer))
-
-    #print("Best acc10 is", acc10)
-    #validate_loss(val_dataloader, model, opt, epoch, writer)
-
+loop(train_one_epoch, datasets, model, criterion, optimizer, scheduler, opt)

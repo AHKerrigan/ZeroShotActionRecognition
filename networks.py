@@ -36,7 +36,7 @@ def get_network(opt):
     Selection function for available networks.conda 
     """
     if opt.network == 'multiplication':
-        return PSZSAR_Original(models.video.r2plus1d_18, hidden_dim=1024, embed=opt.text_embed)
+        return PSZSAR_Original(models.video.r2plus1d_18, hidden_dim=1024, embed=opt.text_embed, fixconvs=opt.fixconvs, pretrain=opt.pretrainbackbone)
     else:
         assert NotImplementedError
 
@@ -58,10 +58,10 @@ class SentFineTune(nn.Module):
 
 class PSZSAR_Original(nn.Module):
     
-    def __init__(self, network, hidden_dim=1024, fixconvs=False, nopretrained=False, embed='sent2vec'):
+    def __init__(self, network, hidden_dim=1024, fixconvs=False, pretrain=False, embed='sent2vec'):
         super(PSZSAR_Original, self).__init__()
 
-        self.model = network(pretrained=True)
+        self.model = network(pretrained=pretrain)
         if fixconvs:
             for param in self.model.parameters():
                 param.requires_grad = False
@@ -71,6 +71,7 @@ class PSZSAR_Original(nn.Module):
         self.model = torch.nn.Sequential(*(list(self.model.children())[:-1]))
  
         self.fine_tuner = SentFineTune(class_embeds=embed)
+        #self.fine_tuner = nn.Identity()
 
         
         self.dropout2 = torch.nn.Dropout(p=0.05)

@@ -244,109 +244,6 @@ def load_clips_tsn(fname, clip_len=16, n_clips=1, is_validation=False):
     frames = frames.reshape([n_clips, clip_len, frame_height, frame_width, 3])
     return frames
 
-'''
-class VideoDataset(Dataset):
-
-    def __init__(self, fnames, labels, class_embed, classes, name, load_clips=load_clips_tsn,
-                 clip_len=8, n_clips=1, crop_size=112, is_validation=False, evaluation_only=False, input_type='rgb', class_mask=None):
-        if 'kinetics' in name:
-            fnames, labels = self.clean_data(fnames, labels)
-        self.data = fnames
-        self.labels = labels
-        self.class_embed = class_embed
-        self.class_name = classes
-        self.name = name
-        self.input_type = input_type
-        self.class_mask = class_mask
-
-        self.clip_len = clip_len
-        self.n_clips = n_clips
-
-        self.crop_size = crop_size  # 112
-        self.is_validation = is_validation
-
-        # prepare a mapping between the label names (strings) and indices (ints)
-        if name in ['ucf_train', 'ucf_test']:
-            assert len(set(classes)) == len(classes)
-            self.label2index = {label: index for index, label in enumerate(classes)}
-            # convert the list of label names into an array of label indices
-            self.label_array = np.array([self.label2index[label] for label in labels], dtype=int)
-        else:
-            self.label2index = {label: index for index, label in enumerate(sorted(set(labels)))}
-            # convert the list of label names into an array of label indices
-            self.label_array = np.array([self.label2index[label] for label in labels], dtype=int)
-        
-        print("label array is ",self.label_array)
-
-        self.transform = get_transform(self.is_validation, crop_size, input_type=self.input_type)
-        self.loadvideo = load_clips
-
-    def __getitem__(self, idx):
-        sample = self.data[idx]
-        label = self.label_array[idx]
-        
-        if 'rgb' in self.input_type:
-            buffer = self.loadvideo(sample, self.clip_len, self.n_clips, self.is_validation)
-        elif 'flow' in self.input_type:
-            buffer = self.loadvideo(sample, self.clip_len+1, self.n_clips, self.is_validation)
-        else:
-            assert NotImplementedError
-            
-        if len(buffer) == 0:
-            print('Error found in video loading!')
-            buffer = np.random.rand(self.n_clips, 3, self.clip_len, self.crop_size, self.crop_size).astype('float32')
-            buffer = torch.from_numpy(buffer)
-            return buffer, -1, self.class_embed[0], idx
-            
-        s = buffer.shape
-        
-        if 'flow' in self.input_type:
-            buffer_gray = np.zeros((s[0], self.clip_len+1, s[2], s[3]), dtype=np.uint8)
-            buffer_new = np.zeros((s[0], self.clip_len, s[2], s[3], s[4]))
-            for i in range(self.n_clips):
-                for j in range(self.clip_len+1):
-                    buffer_gray[i, j] = cv2.cvtColor(buffer[i, j], cv2.COLOR_RGB2GRAY)
-            for i in range(self.n_clips):
-                for j in range(self.clip_len):
-                    buffer_new[i, j, ..., :2] = compute_optical_flow2(buffer_gray[i, j], buffer_gray[i, j+1])
-            buffer = buffer_new
-            s = buffer.shape
-        
-        buffer = buffer.reshape(s[0] * s[1], s[2], s[3], s[4])
-        buffer = torch.stack([torch.from_numpy(im) for im in buffer], 0)
-        buffer = self.transform(buffer)
-        buffer = buffer.reshape(3, s[0], s[1], self.crop_size, self.crop_size).transpose(0, 1)
-
-            
-        try:
-            return buffer, label, self.class_embed[label], idx
-        except:
-            return buffer, -1000, np.zeros_like(self.class_embed[0]), idx
-
-    def __len__(self):
-        return len(self.data)
-
-    @staticmethod
-    def clean_data(fnames, labels):
-        if not isinstance(fnames[0], str):
-            print('Cannot check for broken videos')
-            return fnames, labels
-        broken_videos_file = 'assets/kinetics_broken_videos.txt'
-        if not os.path.exists(broken_videos_file):
-            print('Broken video list does not exists')
-            return fnames, labels
-
-        t = time()
-        with open(broken_videos_file, 'r') as f:
-            broken_samples = [r[:-1] for r in f.readlines()]
-        data = [x[75:] for x in fnames]
-        keep_sample = np.in1d(data, broken_samples) == False
-        fnames = np.array(fnames)[keep_sample]
-        labels = np.array(labels)[keep_sample]
-        print('Broken videos %.2f%% - removing took %.2f' % (100 * (1.0 - keep_sample.mean()), time() - t))
-        return fnames, labels
-'''
-
 def zsar_transform(split='train'):
 
     zsar_transforms = trs.create_video_transform(
@@ -370,6 +267,7 @@ class VideoDataset(Dataset):
     
         self.data = fnames
         self.labels = labels
+        self.name = name
 
         self.clip_len = clip_len
         self.n_clips = n_clips
@@ -384,7 +282,7 @@ class VideoDataset(Dataset):
         assert len(set(classes)) == len(classes)
         self.label2index = {label: index for index, label in enumerate(classes)}
         # convert the list of label names into an array of label indices
-        self.label_array = np.array([self.label2index[label] for label in labels], dtype=int)
+        self.targets = np.array([self.label2index[label] for label in labels], dtype=int)
 
         if is_validation:
             self.transform = zsar_transform('train')
@@ -394,7 +292,7 @@ class VideoDataset(Dataset):
 
     def __getitem__(self, idx):
         sample = self.data[idx]
-        label = self.label_array[idx]
+        label = self.targets[idx]
 
         buffer = self.loadvideo(sample, self.clip_len, self.n_clips, is_validation=False)
 
@@ -402,7 +300,7 @@ class VideoDataset(Dataset):
             print('Error found in video loading!')
             buffer = np.random.rand(self.n_clips, 3, self.clip_len, self.crop_size, self.crop_size).astype('float32')
             buffer = torch.from_numpy(buffer)
-            return buffer, -1, self.class_embed[0], idx
+            return buffer, 0
 
         buffer = rearrange(buffer, 'cl f h w ch -> ch (cl f) h w')
 
@@ -428,46 +326,41 @@ if __name__ == '__main__':
 
     from nltk.corpus import wordnet as wn
     from nltk.stem.wordnet import WordNetLemmatizer
-    def verbs2basicform(words):
-        ret = []
-        for w in words:
-            analysis = wn.synsets(w)
-            if any([a.pos() == 'v' for a in analysis]):
-                w = WordNetLemmatizer().lemmatize(w, 'v')
-            ret.append(w)
-        return ret
+    from avalanche.benchmarks.utils import AvalancheDataset 
+    from avalanche.benchmarks.generators import nc_benchmark
+
 
     opt = getopt()
 
     dataloaders = get_kinetics_ucf_hmbd(opt)
     train_dataset = dataloaders['training'][0]
+    test_dataset = dataloaders['testing'][0]
 
+
+    scenerio = nc_benchmark(train_dataset, train_dataset, n_experiences=22, shuffle=True, seed=1234, task_labels=False)
+
+    class_embeds = torch.from_numpy(train_dataset.class_embeds).to(opt.device).unsqueeze(0).repeat(opt.gpus, 1, 1, 1)
+    train_dataset = AvalancheDataset(train_dataset)
     train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=opt.batch_size, num_workers=0, shuffle=True, drop_last=False)
 
-    class_embeds = torch.from_numpy(train_dataloader.dataset.class_embeds).to(opt.device).unsqueeze(0).repeat(opt.gpus, 1, 1, 1)
-    for i, (vid, label, sample, classname) in enumerate(train_dataloader):
 
-        print(sample[5])
-        print(label[5])
-        print(classname[5])
-        #print(class_embeds[:,label[5]])
+    for experience in scenerio.train_stream:
+        training_dataset = experience.dataset
+        train_dataloader = torch.utils.data.DataLoader(training_dataset, batch_size=opt.batch_size, num_workers=12, shuffle=True, drop_last=False)
 
-        vecs = Vectors.from_pretrained("word2vec-google-news-300")
-
-        cn = classname[5].split(" ")
-        cn = verbs2basicform(cn)
-
-        print(cn)
-        cn = vecs[cn]
-        print(cn.mean(0) - class_embeds[:,label[5]].cpu().numpy())
+        for x, y, z in tqdm(train_dataloader):
+            print(y)
 
 
-        
-        
 
-    
-        break
+    '''
+    for i, (vid, label, task) in enumerate(train_dataloader):
 
+
+        print(vid.shape)
+        print(label)
+        print(task)
+    '''
         
     #fnames, labels, classes = get_kinetics(opt) 
 
