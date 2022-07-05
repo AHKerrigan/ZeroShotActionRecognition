@@ -174,7 +174,7 @@ def bertavg_embed(class_name_inputs, opt):
     tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
     model = BertModel.from_pretrained("bert-base-uncased")
 
-    tokens = tokenizer(class_name_inputs, return_tensors='pt', padding='max_length', max_length=20)
+    tokens = tokenizer(class_name_inputs, return_tensors='pt', padding='max_length', max_length=12)
     outputs = model(**tokens).pooler_output.detach().numpy()
 
     return np.expand_dims(np.stack(outputs), axis=1)

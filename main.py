@@ -46,18 +46,24 @@ else:
 if opt.traintype == 'ce':   
     criterion = torch.nn.CrossEntropyLoss()
     train_one_epoch = train.train_one_epoch_pws
+if opt.traintype == 'ce-mm':   
+    criterion = torch.nn.CrossEntropyLoss()
+    train_one_epoch = train.train_one_epoch_ce_mm1
 
 _ = criterion.to(opt.device)
 model = networks.get_network(opt)
 
-optimizer = torch.optim.Adam(model.parameters(), lr=opt.lr)
+if opt.optimizer == 'sgd':
+    optimizer = torch.optim.SGD(model.parameters(), lr=opt.lr, weight_decay=0.0001)
+else:
+    optimizer = torch.optim.Adam(model.parameters(), lr=opt.lr)
 
-scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, [60, 120], gamma=0.1)
+scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=opt.step_size, gamma=0.5)
 
 
 
 _ = model.to(opt.device)
-wandb.watch(model, criterion, log="all")
+if opt.wandb: wandb.watch(model, criterion, log="all")
 
 acc10 = 0
 loop(train_one_epoch, datasets, model, criterion, optimizer, scheduler, opt)
